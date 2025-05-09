@@ -1,0 +1,89 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Focus Challenge - June</title>
+    <style>
+        body {
+            background-color: #ff5e00; /* FND orange */
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            color: #0a0440; /* FND dark blue */
+            margin: 0;
+            padding: 0;
+        }
+        .logo {
+            max-width: 200px;
+            margin: 20px auto;
+        }
+        h1 {
+            font-size: 2em;
+            margin: 10px;
+        }
+        #game {
+            margin-top: 20px;
+        }
+        #box {
+            width: 100px;
+            height: 100px;
+            background-color: #0a0440;
+            position: relative;
+            margin: 40px auto;
+            display: none;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        #start {
+            padding: 12px 25px;
+            background-color: #0a0440;
+            color: white;
+            font-size: 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        #message {
+            font-size: 1.2rem;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <img class="logo" src="https://chat.openai.com/mnt/data/Not%20Defined%20By%20Fnd.png" alt="FND Logo">
+    <h1>Focus Challenge - June</h1>
+    <div id="game">
+        <button id="start">Start</button>
+        <div id="box"></div>
+        <div id="message"></div>
+    </div>
+
+    <script>
+        const startBtn = document.getElementById("start");
+        const box = document.getElementById("box");
+        const message = document.getElementById("message");
+        let startTime, endTime;
+
+        startBtn.onclick = function() {
+            startBtn.style.display = "none";
+            message.textContent = "Get ready...";
+            let delay = Math.random() * 3000 + 2000; // 2–5 seconds delay
+
+            setTimeout(function() {
+                box.style.display = "block";
+                box.style.left = Math.random() * 300 + "px";
+                box.style.top = Math.random() * 300 + "px";
+                startTime = Date.now();
+            }, delay);
+        };
+
+        box.onclick = function() {
+            endTime = Date.now();
+            let reactionTime = (endTime - startTime) / 1000;
+            message.textContent = "Your reaction time: " + reactionTime + " seconds";
+            box.style.display = "none";
+            startBtn.style.display = "inline-block";
+        };
+    </script>
+</body>
+</html>
