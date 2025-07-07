@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Focus Challenge - 30 Second Mode</title>
+  <style>
+    body {
+      background-color: #ff5e00;
+      color: #001f4d;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      font-size: 2em;
+      margin-bottom: 0.5em;
+    }
+    #logo {
+      max-width: 200px;
+      margin: 20px auto;
+    }
+    #game-container, #result-screen {
+      position: relative;
+      width: 100%;
+      max-width: 600px;
+      height: 400px;
+      margin: 20px auto;
+      border: 3px solid #001f4d;
+      border-radius: 10px;
+      background-color: #fff4e6;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #dot {
+      width: 40px;
+      height: 40px;
+      background-color: #001f4d;
+      border-radius: 50%;
+      position: absolute;
+      display: none;
+      cursor: pointer;
+    }
+    #info {
+      margin-top: 10px;
+      font-size: 1.1em;
+    }
+    #start-btn, #restart-btn {
+      background-color: #001f4d;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      font-size: 1em;
+      cursor: pointer;
+    }
+    #start-btn:hover, #restart-btn:hover {
+      background-color: #003366;
+    }
+    #result-screen {
+      flex-direction: column;
+      display: none;
+    }
+    #result-screen p {
+      font-size: 1.2em;
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+  <img id="logo" src="https://notdefinedbyfnd.github.io/FND-Games/assets/logo.png" alt="FND Logo" />
+  <h1>Focus Challenge: 30 Second Mode</h1>
+  <p>Click the dot as fast as you can. See how many you get in 30 seconds!</p>
+  <button id="start-btn">Start Game</button>
+  
+  <!-- Game Container -->
+  <div id="game-container">
+    <div id="dot"></div>
+  </div>
+  
+  <!-- Information Display -->
+  <div id="info">
+    <p><strong>Dots Clicked:</strong> <span id="score">0</span></p>
+    <p><strong>Time Left:</strong> <span id="time">30</span> seconds</p>
+    <p><strong>Average Reaction Time:</strong> <span id="average">--</span> ms</p>
+  </div>
+  
+  <!-- Results Screen -->
+  <div id="result-screen">
+    <h2>Time's Up!</h2>
+    <p><strong>Your Score:</strong> <span id="final-score">0</span></p>
+    <p><strong>Average Reaction Time:</strong> <span id="final-average">--</span> ms</p>
+    <button id="restart-btn">Restart Game</button>
+  </div>
+  
+  <script>
+    const dot = document.getElementById("dot");
+    const gameContainer = document.getElementById("game-container");
+    const scoreEl = document.getElementById("score");
+    const timeEl = document.getElementById("time");
+    const averageEl = document.getElementById("average");
+    const finalScoreEl = document.getElementById("final-score");
+    const finalAverageEl = document.getElementById("final-average");
+    const startBtn = document.getElementById("start-btn");
+    const restartBtn = document.getElementById("restart-btn");
+    const resultScreen = document.getElementById("result-screen");
+    
+    let startTime, reactionTimes = [], score = 0, countdown;
+    
+    function randomPosition() {
+      const maxX = gameContainer.clientWidth - 40;
+      const maxY = gameContainer.clientHeight - 40;
+      return {
+        x: Math.floor(Math.random() * maxX),
+        y: Math.floor(Math.random() * maxY)
+      };
+    }
+    
+    function showDot() {
+      const { x, y } = randomPosition();
+      dot.style.left = x + "px";
+      dot.style.top = y + "px";
+      dot.style.display = "block";
+      startTime = Date.now();
+    }
+    
+    dot.onclick = () => {
+      const rt = Date.now() - startTime;
+      reactionTimes.push(rt);
+      score++;
+      scoreEl.textContent = score;
+      averageEl.textContent = Math.round(
+        reactionTimes.reduce((a, b) => a + b) / reactionTimes.length
+      );
+      dot.style.display = "none";
+      setTimeout(showDot, 500 + Math.random() * 500);
+    };
+    
+    function startGame() {
+      reactionTimes = [];
+      score = 0;
+      scoreEl.textContent = "0";
+      averageEl.textContent = "--";
+      timeEl.textContent = "30";
+      startBtn.disabled = true;
+      // Hide results screen in case it was visible
+      resultScreen.style.display = "none";
+      gameContainer.style.display = "flex";
+      showDot();
+      
+      let timeLeft = 30;
+      countdown = setInterval(() => {
+        timeLeft--;
+        timeEl.textContent = timeLeft;
+        if (timeLeft <= 0) {
+          clearInterval(countdown);
+          dot.style.display = "none";
+          gameContainer.style.display = "none";
+          // Set final results
+          finalScoreEl.textContent = score;
+          if (reactionTimes.length > 0) {
+            finalAverageEl.textContent = Math.round(
+              reactionTimes.reduce((a, b) => a + b) / reactionTimes.length
+            );
+          } else {
+            finalAverageEl.textContent = "--";
+          }
+          // Show result screen
+          resultScreen.style.display = "flex";
+          startBtn.disabled = false;
+        }
+      }, 1000);
+    }
+    
+    startBtn.addEventListener("click", startGame);
+    restartBtn.addEventListener("click", startGame);
+  </script>
+</body>
+</html>
