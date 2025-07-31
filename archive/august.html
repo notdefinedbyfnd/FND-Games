@@ -1,149 +1,126 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Reaction Race: Color Pop Edition</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #fff8f0;
-      color: #001f4d;
+      font-family: 'Arial', sans-serif;
+      background-color: #fdf6f0;
       text-align: center;
-      padding: 2rem;
-    }
-    h1 {
-      color: #ff5e00;
+      padding: 20px;
+      color: #0d1b2a;
     }
     #logo {
-      width: 150px;
-      margin-bottom: 1rem;
+      max-width: 180px;
+      margin-bottom: 20px;
     }
-    #gameArea {
-      margin-top: 2rem;
+    h1 {
+      color: #f26b38;
     }
-    .circle {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      background-color: gray;
-      display: inline-block;
-      margin: 10px;
+    #word {
+      font-size: 4rem;
+      margin: 40px;
       cursor: pointer;
     }
-    .active {
-      background-color: #ff5e00;
+    #scoreboard {
+      font-size: 1.5rem;
+      margin: 20px;
     }
     button {
-      background: #ff5e00;
+      background-color: #f26b38;
       color: white;
-      padding: 10px 20px;
       border: none;
+      padding: 10px 20px;
+      font-size: 1.2rem;
       border-radius: 8px;
       cursor: pointer;
-      font-size: 1rem;
-      margin: 0.5rem;
     }
-    #scoreBoard {
-      margin-top: 1rem;
-      font-size: 1.2rem;
+    #result {
+      font-size: 1.3rem;
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
-  <img id="logo" src="https://notdefinedbyfnd.github.io/FND-Games/logo.png" alt="FND Logo">
-  <h1>🎯 Reaction Race: Color Pop Edition</h1>
-  <p>Click the orange circles as fast as you can before time runs out!</p>
 
-  <div>
-    <p>Select Difficulty:</p>
-    <button onclick="setDifficulty(1500)">Easy</button>
-    <button onclick="setDifficulty(1000)">Medium</button>
-    <button onclick="setDifficulty(600)">Hard</button>
-  </div>
-
-  <div id="gameArea"></div>
-
-  <div id="scoreBoard">
-    <p>Time Left: <span id="timeLeft">30</span>s</p>
-    <p>Score: <span id="score">0</span></p>
-  </div>
-
-  <button id="startBtn">Start Game</button>
-  <button id="restartBtn" style="display: none;">Play Again</button>
+  <img id="logo" src="https://notdefinedbyfnd.github.io/FND-Games/logo.png" alt="FND Logo"/>
+  <h1>Reaction Race: Color Pop Edition</h1>
+  <p>Click the word only if its text matches its meaning!</p>
+  <div id="word">READY?</div>
+  <div id="scoreboard">Score: 0 | Time: 45s</div>
+  <button onclick="startGame()">Start Game</button>
+  <div id="result"></div>
 
   <script>
-    const gameArea = document.getElementById('gameArea');
-    const startBtn = document.getElementById('startBtn');
-    const restartBtn = document.getElementById('restartBtn');
-    const scoreDisplay = document.getElementById('score');
-    const timeLeftDisplay = document.getElementById('timeLeft');
+    const colors = ['RED', 'BLUE', 'GREEN', 'YELLOW', 'PURPLE', 'ORANGE'];
+    const colorCodes = {
+      RED: '#e63946',
+      BLUE: '#1d3557',
+      GREEN: '#2a9d8f',
+      YELLOW: '#f4a261',
+      PURPLE: '#9b5de5',
+      ORANGE: '#f26b38'
+    };
 
     let score = 0;
-    let timeLeft = 30;
-    let interval;
-    let activeCircle = null;
-    let difficulty = 1000; // default to Medium
-    let popTimeout;
-
-    function setDifficulty(ms) {
-      difficulty = ms;
-    }
-
-    function createCircles() {
-      gameArea.innerHTML = '';
-      for (let i = 0; i < 6; i++) {
-        const circle = document.createElement('div');
-        circle.classList.add('circle');
-        circle.addEventListener('click', () => {
-          if (circle === activeCircle) {
-            score++;
-            scoreDisplay.textContent = score;
-            activateRandomCircle();
-          }
-        });
-        gameArea.appendChild(circle);
-      }
-    }
-
-    function activateRandomCircle() {
-      const circles = document.querySelectorAll('.circle');
-      circles.forEach(c => c.classList.remove('active'));
-      const randomIndex = Math.floor(Math.random() * circles.length);
-      activeCircle = circles[randomIndex];
-      activeCircle.classList.add('active');
-      clearTimeout(popTimeout);
-      popTimeout = setTimeout(() => {
-        if (activeCircle) activeCircle.classList.remove('active');
-        activateRandomCircle();
-      }, difficulty);
-    }
+    let timeLeft = 45;
+    let interval, timeout;
+    let clickable = false;
+    const wordDisplay = document.getElementById('word');
+    const scoreboard = document.getElementById('scoreboard');
+    const resultDisplay = document.getElementById('result');
 
     function startGame() {
       score = 0;
-      timeLeft = 30;
-      scoreDisplay.textContent = score;
-      timeLeftDisplay.textContent = timeLeft;
-      startBtn.style.display = 'none';
-      restartBtn.style.display = 'none';
-      createCircles();
-      activateRandomCircle();
+      timeLeft = 45;
+      clickable = false;
+      resultDisplay.textContent = '';
+      document.querySelector("button").disabled = true;
+      scoreboard.textContent = "Score: 0 | Time: 45s";
+
       interval = setInterval(() => {
         timeLeft--;
-        timeLeftDisplay.textContent = timeLeft;
-        if (timeLeft <= 0) endGame();
+        scoreboard.textContent = `Score: ${score} | Time: ${timeLeft}s`;
+        if (timeLeft <= 0) {
+          endGame();
+        }
       }, 1000);
+
+      showWord();
     }
+
+    function showWord() {
+      if (timeLeft <= 0) return;
+
+      const wordText = colors[Math.floor(Math.random() * colors.length)];
+      const fontColor = colors[Math.floor(Math.random() * colors.length)];
+      wordDisplay.textContent = wordText;
+      wordDisplay.style.color = colorCodes[fontColor];
+      clickable = (wordText === fontColor);
+
+      clearTimeout(timeout);
+      timeout = setTimeout(showWord, 1000);
+    }
+
+    wordDisplay.addEventListener('click', () => {
+      if (clickable && timeLeft > 0) {
+        score++;
+      } else if (timeLeft > 0) {
+        score--;
+      }
+      scoreboard.textContent = `Score: ${score} | Time: ${timeLeft}s`;
+    });
 
     function endGame() {
       clearInterval(interval);
-      clearTimeout(popTimeout);
-      gameArea.innerHTML = `<h2>Time's up! You scored ${score}!</h2>`;
-      restartBtn.style.display = 'inline-block';
+      clearTimeout(timeout);
+      document.querySelector("button").disabled = false;
+      wordDisplay.textContent = "Game Over!";
+      wordDisplay.style.color = "#0d1b2a";
+      resultDisplay.textContent = `Final Score: ${score}`;
     }
-
-    startBtn.addEventListener('click', startGame);
-    restartBtn.addEventListener('click', startGame);
   </script>
 </body>
 </html>
