@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Memory Match: 10-Second Recall</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #fff8f0;
+      color: #001f4d;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #001f4d;
+    }
+
+    .logo {
+      max-width: 160px;
+      margin-bottom: 20px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 60px);
+      grid-gap: 10px;
+      justify-content: center;
+      margin: 20px auto;
+    }
+
+    .tile {
+      width: 60px;
+      height: 60px;
+      background-color: #ccc;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .tile.highlight {
+      background-color: #ff5e00;
+    }
+
+    .tile.correct {
+      background-color: #4caf50;
+    }
+
+    .tile.wrong {
+      background-color: #f44336;
+    }
+
+    #start-btn, #restart-btn {
+      background-color: #ff5e00;
+      color: white;
+      padding: 10px 20px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 10px;
+    }
+
+    #controls {
+      margin-top: 15px;
+    }
+
+    #timer {
+      font-size: 1.2rem;
+      margin-top: 10px;
+    }
+
+    select {
+      padding: 5px;
+      font-size: 1rem;
+      border-radius: 5px;
+      margin-left: 10px;
+    }
+
+    #message {
+      margin-top: 20px;
+      font-size: 1.2rem;
+    }
+  </style>
+</head>
+<body>
+
+  <img src="https://notdefinedbyfnd.github.io/FND-Games/assets/not-defined-by-fnd-logo.png" alt="Not Defined By FND Logo" class="logo" />
+  <h1>🧠 Memory Match: 10-Second Recall</h1>
+  <p>Watch a pattern for 10 seconds, then recreate it from memory. Choose your challenge!</p>
+
+  <div id="controls">
+    <label for="difficulty">Difficulty:</label>
+    <select id="difficulty">
+      <option value="easy">Easy (3 tiles)</option>
+      <option value="medium" selected>Medium (5 tiles)</option>
+      <option value="hard">Hard (7 tiles)</option>
+    </select>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <div id="timer"></div>
+
+  <button id="start-btn">Start Game</button>
+  <button id="restart-btn" style="display:none;">Try Again</button>
+
+  <div id="message"></div>
+
+  <script>
+    const grid = document.getElementById('grid');
+    const startBtn = document.getElementById('start-btn');
+    const restartBtn = document.getElementById('restart-btn');
+    const message = document.getElementById('message');
+    const timerDisplay = document.getElementById('timer');
+    const difficultySelect = document.getElementById('difficulty');
+
+    let pattern = [];
+    let userPattern = [];
+    let gameActive = false;
+    let timeLeft = 30;
+    let timerInterval;
+    let difficultyMap = {
+      easy: 3,
+      medium: 5,
+      hard: 7
+    };
+
+    function createGrid() {
+      grid.innerHTML = '';
+      for (let i = 0; i < 16; i++) {
+        const tile = document.createElement('div');
+        tile.classList.add('tile');
+        tile.dataset.index = i;
+        tile.addEventListener('click', handleTileClick);
+        grid.appendChild(tile);
+      }
+    }
+
+    function generatePattern() {
+      pattern = [];
+      const count = difficultyMap[difficultySelect.value];
+      while (pattern.length < count) {
+        const rand = Math.floor(Math.random() * 16);
+        if (!pattern.includes(rand)) {
+          pattern.push(rand);
+        }
+      }
+    }
+
+    function showPattern() {
+      pattern.forEach(index => {
+        const tile = grid.children[index];
+        tile.classList.add('highlight');
+      });
+      setTimeout(hidePattern, 10000);
+    }
+
+    function hidePattern() {
+      for (const tile of grid.children) {
+        tile.classList.remove('highlight');
+      }
+      gameActive = true;
+      message.textContent = "Now recreate the pattern!";
+      startCountdown();
+    }
+
+    function handleTileClick(e) {
+      if (!gameActive) return;
+      const index = parseInt(e.target.dataset.index);
+      if (!userPattern.includes(index)) {
+        userPattern.push(index);
+        if (pattern.includes(index)) {
+          e.target.classList.add('correct');
+        } else {
+          e.target.classList.add('wrong');
+        }
+      }
+
+      if (userPattern.length === pattern.length) {
+        stopCountdown();
+        checkResults();
+      }
+    }
+
+    function checkResults() {
+      gameActive = false;
+      let score = 0;
+      userPattern.forEach(i => {
+        if (pattern.includes(i)) score++;
+      });
+      const bonus = Math.max(0, timeLeft);
+      message.textContent = `You got ${score}/${pattern.length} right. Time bonus: ${bonus} sec. Final Score: ${score + bonus}`;
+      restartBtn.style.display = 'inline-block';
+      timerDisplay.textContent = '';
+    }
+
+    function startCountdown() {
+      timeLeft = 30;
+      timerDisplay.textContent = `Time Left: ${timeLeft}s`;
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        timerDisplay.textContent = `Time Left: ${timeLeft}s`;
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          gameActive = false;
+          checkResults();
+        }
+      }, 1000);
+    }
+
+    function stopCountdown() {
+      clearInterval(timerInterval);
+    }
+
+    function startGame() {
+      userPattern = [];
+      gameActive = false;
+      message.textContent = '';
+      startBtn.style.display = 'none';
+      restartBtn.style.display = 'none';
+      timerDisplay.textContent = '';
+      createGrid();
+      generatePattern();
+      showPattern();
+    }
+
+    startBtn.addEventListener('click', startGame);
+    restartBtn.addEventListener('click', startGame);
+    createGrid();
+  </script>
+</body>
+</html>
