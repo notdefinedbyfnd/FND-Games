@@ -2,125 +2,121 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Reaction Race: Color Pop Edition</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Word Scramble: Brain Buzz</title>
   <style>
     body {
-      font-family: 'Arial', sans-serif;
-      background-color: #fdf6f0;
+      font-family: Arial, sans-serif;
+      background: #fff8f0;
+      color: #001f4d;
       text-align: center;
-      padding: 20px;
-      color: #0d1b2a;
-    }
-    #logo {
-      max-width: 180px;
-      margin-bottom: 20px;
+      padding: 2rem;
     }
     h1 {
-      color: #f26b38;
+      color: #ff5e00;
     }
-    #word {
-      font-size: 4rem;
-      margin: 40px;
-      cursor: pointer;
+    #logo {
+      width: 150px;
+      margin-bottom: 1rem;
     }
-    #scoreboard {
-      font-size: 1.5rem;
-      margin: 20px;
+    #scrambledWord {
+      font-size: 2rem;
+      margin: 1rem 0;
+      letter-spacing: 3px;
+    }
+    input[type="text"] {
+      font-size: 1.2rem;
+      padding: 8px;
+      width: 200px;
     }
     button {
-      background-color: #f26b38;
+      background: #ff5e00;
       color: white;
       border: none;
       padding: 10px 20px;
-      font-size: 1.2rem;
-      border-radius: 8px;
+      margin-top: 1rem;
+      font-size: 1rem;
+      border-radius: 6px;
       cursor: pointer;
     }
-    #result {
-      font-size: 1.3rem;
-      margin-top: 20px;
+    #feedback {
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+    #scoreBoard {
+      margin-top: 1rem;
+      font-size: 1.2rem;
     }
   </style>
 </head>
 <body>
+  <img id="logo" src="https://notdefinedbyfnd.github.io/FND-Games/logo.png" alt="FND Logo">
+  <h1>🧠 Word Scramble: Brain Buzz</h1>
+  <p>Unscramble the letters to find the correct word. A fun way to boost cognitive flexibility and word recall!</p>
 
-  <img id="logo" src="https://notdefinedbyfnd.github.io/FND-Games/logo.png" alt="FND Logo"/>
-  <h1>Reaction Race: Color Pop Edition</h1>
-  <p>Click the word only if its text matches its meaning!</p>
-  <div id="word">READY?</div>
-  <div id="scoreboard">Score: 0 | Time: 45s</div>
-  <button onclick="startGame()">Start Game</button>
-  <div id="result"></div>
+  <div id="scrambledWord">Loading...</div>
+  <input type="text" id="guessInput" placeholder="Your guess" />
+  <br />
+  <button onclick="submitGuess()">Submit</button>
+  <div id="feedback"></div>
+
+  <div id="scoreBoard">
+    <p>Score: <span id="score">0</span></p>
+    <p>Round: <span id="round">1</span> / 10</p>
+  </div>
 
   <script>
-    const colors = ['RED', 'BLUE', 'GREEN', 'YELLOW', 'PURPLE', 'ORANGE'];
-    const colorCodes = {
-      RED: '#e63946',
-      BLUE: '#1d3557',
-      GREEN: '#2a9d8f',
-      YELLOW: '#f4a261',
-      PURPLE: '#9b5de5',
-      ORANGE: '#f26b38'
-    };
+    const words = [
+      "focus", "brain", "health", "retrain", "neuron", "signal", "energy", "balance", "calm", "resilience"
+    ];
 
+    let currentWord = "";
+    let scrambled = "";
     let score = 0;
-    let timeLeft = 45;
-    let interval, timeout;
-    let clickable = false;
-    const wordDisplay = document.getElementById('word');
-    const scoreboard = document.getElementById('scoreboard');
-    const resultDisplay = document.getElementById('result');
+    let round = 1;
 
-    function startGame() {
-      score = 0;
-      timeLeft = 45;
-      clickable = false;
-      resultDisplay.textContent = '';
-      document.querySelector("button").disabled = true;
-      scoreboard.textContent = "Score: 0 | Time: 45s";
+    const scrambledWordDiv = document.getElementById("scrambledWord");
+    const input = document.getElementById("guessInput");
+    const feedback = document.getElementById("feedback");
+    const scoreDisplay = document.getElementById("score");
+    const roundDisplay = document.getElementById("round");
 
-      interval = setInterval(() => {
-        timeLeft--;
-        scoreboard.textContent = `Score: ${score} | Time: ${timeLeft}s`;
-        if (timeLeft <= 0) {
-          endGame();
-        }
-      }, 1000);
-
-      showWord();
+    function scramble(word) {
+      return word.split('').sort(() => 0.5 - Math.random()).join('');
     }
 
-    function showWord() {
-      if (timeLeft <= 0) return;
-
-      const wordText = colors[Math.floor(Math.random() * colors.length)];
-      const fontColor = colors[Math.floor(Math.random() * colors.length)];
-      wordDisplay.textContent = wordText;
-      wordDisplay.style.color = colorCodes[fontColor];
-      clickable = (wordText === fontColor);
-
-      clearTimeout(timeout);
-      timeout = setTimeout(showWord, 1000);
-    }
-
-    wordDisplay.addEventListener('click', () => {
-      if (clickable && timeLeft > 0) {
-        score++;
-      } else if (timeLeft > 0) {
-        score--;
+    function nextRound() {
+      if (round > 10) {
+        scrambledWordDiv.textContent = `Game over! Final score: ${score}`;
+        input.style.display = "none";
+        feedback.textContent = "Refresh to play again!";
+        return;
       }
-      scoreboard.textContent = `Score: ${score} | Time: ${timeLeft}s`;
-    });
-
-    function endGame() {
-      clearInterval(interval);
-      clearTimeout(timeout);
-      document.querySelector("button").disabled = false;
-      wordDisplay.textContent = "Game Over!";
-      wordDisplay.style.color = "#0d1b2a";
-      resultDisplay.textContent = `Final Score: ${score}`;
+      currentWord = words[Math.floor(Math.random() * words.length)];
+      scrambled = scramble(currentWord);
+      while (scrambled === currentWord) {
+        scrambled = scramble(currentWord);
+      }
+      scrambledWordDiv.textContent = scrambled;
+      input.value = "";
+      feedback.textContent = "";
     }
+
+    function submitGuess() {
+      const guess = input.value.toLowerCase();
+      if (guess === currentWord) {
+        score++;
+        feedback.textContent = "✅ Correct!";
+        scoreDisplay.textContent = score;
+      } else {
+        feedback.textContent = `❌ Oops! The word was "${currentWord}".`;
+      }
+      round++;
+      roundDisplay.textContent = round <= 10 ? round : 10;
+      setTimeout(nextRound, 1500);
+    }
+
+    nextRound();
   </script>
 </body>
 </html>
