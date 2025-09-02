@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Word Scramble: Brain Buzz</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #fff8f0;
+      color: #001f4d;
+      text-align: center;
+      padding: 2rem;
+    }
+    h1 {
+      color: #ff5e00;
+    }
+    #logo {
+      width: 150px;
+      margin-bottom: 1rem;
+    }
+    #scrambledWord {
+      font-size: 2rem;
+      margin: 1rem 0;
+      letter-spacing: 3px;
+    }
+    input[type="text"] {
+      font-size: 1.2rem;
+      padding: 8px;
+      width: 200px;
+    }
+    button {
+      background: #ff5e00;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin-top: 1rem;
+      font-size: 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    #feedback {
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+    #scoreBoard {
+      margin-top: 1rem;
+      font-size: 1.2rem;
+    }
+  </style>
+</head>
+<body>
+  <img id="logo" src="https://notdefinedbyfnd.github.io/FND-Games/logo.png" alt="FND Logo">
+  <h1>🧠 Word Scramble: Brain Buzz</h1>
+  <p>Unscramble the letters to find the correct word. A fun way to boost cognitive flexibility and word recall!</p>
+
+  <div id="scrambledWord">Loading...</div>
+  <input type="text" id="guessInput" placeholder="Your guess" />
+  <br />
+  <button onclick="submitGuess()">Submit</button>
+  <div id="feedback"></div>
+
+  <div id="scoreBoard">
+    <p>Score: <span id="score">0</span></p>
+    <p>Round: <span id="round">1</span> / 10</p>
+  </div>
+
+  <script>
+    const words = [
+      "focus", "brain", "health", "retrain", "neuron", "signal", "energy", "balance", "calm", "resilience"
+    ];
+
+    let currentWord = "";
+    let scrambled = "";
+    let score = 0;
+    let round = 1;
+
+    const scrambledWordDiv = document.getElementById("scrambledWord");
+    const input = document.getElementById("guessInput");
+    const feedback = document.getElementById("feedback");
+    const scoreDisplay = document.getElementById("score");
+    const roundDisplay = document.getElementById("round");
+
+    function scramble(word) {
+      return word.split('').sort(() => 0.5 - Math.random()).join('');
+    }
+
+    function nextRound() {
+      if (round > 10) {
+        scrambledWordDiv.textContent = `Game over! Final score: ${score}`;
+        input.style.display = "none";
+        feedback.textContent = "Refresh to play again!";
+        return;
+      }
+      currentWord = words[Math.floor(Math.random() * words.length)];
+      scrambled = scramble(currentWord);
+      while (scrambled === currentWord) {
+        scrambled = scramble(currentWord);
+      }
+      scrambledWordDiv.textContent = scrambled;
+      input.value = "";
+      feedback.textContent = "";
+    }
+
+    function submitGuess() {
+      const guess = input.value.toLowerCase();
+      if (guess === currentWord) {
+        score++;
+        feedback.textContent = "✅ Correct!";
+        scoreDisplay.textContent = score;
+      } else {
+        feedback.textContent = `❌ Oops! The word was "${currentWord}".`;
+      }
+      round++;
+      roundDisplay.textContent = round <= 10 ? round : 10;
+      setTimeout(nextRound, 1500);
+    }
+
+    nextRound();
+  </script>
+</body>
+</html>
