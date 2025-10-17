@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pattern Pulse: Sequence Builder</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5faff;
+      color: #001f4d;
+      text-align: center;
+      padding: 2rem;
+    }
+    h1 {
+      color: #ff5e00;
+    }
+    #logo {
+      width: 150px;
+      margin-bottom: 1rem;
+    }
+    #gameBoard {
+      display: grid;
+      grid-template-columns: repeat(2, 100px);
+      grid-gap: 20px;
+      justify-content: center;
+      margin-top: 2rem;
+    }
+    .tile {
+      width: 100px;
+      height: 100px;
+      background-color: #ccc;
+      border: 3px solid #001f4d;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    .active {
+      background-color: #ff5e00 !important;
+    }
+    button {
+      background: #001f4d;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      margin: 1rem;
+    }
+    #status {
+      font-size: 1.2rem;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <img id="logo" src="https://notdefinedbyfnd.github.io/FND-Games/logo.png" alt="FND Logo">
+  <h1>🔁 Pattern Pulse: Sequence Builder</h1>
+  <p>Watch the pattern, then repeat it! Can you keep up?</p>
+  <button onclick="startGame()">Start Game</button>
+  <div id="gameBoard">
+    <div class="tile" id="0" onclick="handleClick(0)"></div>
+    <div class="tile" id="1" onclick="handleClick(1)"></div>
+    <div class="tile" id="2" onclick="handleClick(2)"></div>
+    <div class="tile" id="3" onclick="handleClick(3)"></div>
+  </div>
+  <div id="status"></div>
+
+  <script>
+    const tiles = document.querySelectorAll('.tile');
+    const status = document.getElementById('status');
+
+    let sequence = [];
+    let playerSequence = [];
+    let round = 0;
+    let acceptingInput = false;
+
+    function startGame() {
+      sequence = [];
+      playerSequence = [];
+      round = 0;
+      status.textContent = '';
+      nextRound();
+    }
+
+    function nextRound() {
+      acceptingInput = false;
+      playerSequence = [];
+      const nextTile = Math.floor(Math.random() * 4);
+      sequence.push(nextTile);
+      round++;
+      status.textContent = `Round ${round}`;
+      playSequence();
+    }
+
+    function playSequence() {
+      let i = 0;
+      const interval = setInterval(() => {
+        highlightTile(sequence[i]);
+        i++;
+        if (i >= sequence.length) {
+          clearInterval(interval);
+          acceptingInput = true;
+        }
+      }, 700);
+    }
+
+    function highlightTile(index) {
+      tiles[index].classList.add('active');
+      setTimeout(() => tiles[index].classList.remove('active'), 400);
+    }
+
+    function handleClick(index) {
+      if (!acceptingInput) return;
+      playerSequence.push(index);
+      highlightTile(index);
+
+      const currentStep = playerSequence.length - 1;
+      if (playerSequence[currentStep] !== sequence[currentStep]) {
+        status.textContent = `❌ Wrong pattern! You reached round ${round}.`;
+        acceptingInput = false;
+        return;
+      }
+
+      if (playerSequence.length === sequence.length) {
+        setTimeout(() => nextRound(), 1000);
+      }
+    }
+  </script>
+</body>
+</html>
